@@ -1,54 +1,44 @@
 language: python
-python: "2.7"
+python: '3.6'
 dist: xenial
-
 stages:
-  - lint
-  - test
-  - name: deploy
-    if: tag IS present
-
+- test
+- name: deploy
+  if: tag IS present
 cache:
   pip: true
   directories:
-    - "$HOME/.cache/pre-commit"
-
+  - "$HOME/.cache/pre-commit"
 jobs:
   include:
-    - stage: lint
-      install:
-        - pip install pre-commit
-        - pre-commit install-hooks
-      script:
-        - pre-commit run --all-files
-    - stage: test
-      install:
-        - pip install --upgrade pip
-        - pip install coveralls
-        - pip install poetry
-        - poetry install -v
-      script:
-        - pytest --cov
-      after_success:
-        - coveralls
-    - stage: deploy
-      script:
-        - echo Deploying to PyPI...
-
+  - stage: test
+    install:
+    - pip install --upgrade pip
+    - pip install pre-commit coveralls poetry
+    - pre-commit install-hooks
+    - poetry install -v
+    script:
+    - pre-commit run --all-files
+    - pytest --cov=./graphene_acl
+    after_success:
+    - coveralls -v
+  - stage: deploy
+    script:
+    - echo Deploying to PyPI...
 before_deploy:
-  # User and password environment variables are set as hidden variables through
-  # the web interface in the project settings.
-  - pip install --upgrade pip
-  - pip install poetry
-  - poetry config http-basic.pypi $PYPI_USER $PYPI_PASS
-  - poetry build
-
+- pip install --upgrade pip
+- pip install poetry
+- poetry config http-basic.pypi $PYPI_USER $PYPI_PASS
+- poetry build
 deploy:
   provider: script
   script: poetry publish
   skip_cleanup: true
   on:
-    all_branches: true  # Travis recognizes tag names as "branches"
-    condition: $TRAVIS_BUILD_STAGE_NAME = Deploy
-    repo: cybergrx/graphene-acl
+    all_branches: true
+    repo: CyberGRX/graphene-acl
     tags: true
+env:
+  global:
+  - secure: xJZQ+kAS4ZwX4P9BdhLoEIztxbNFhmzBOHjgkaonGaz6/pIGNTO0V2tvFd3ffL4dWfGdsm9uj4BlpO9jHLQ+8RSfh4f/GqNL5gpFSOSTtzdFcY+78CuvH1antpRMYaks/atyFqyYtFX6s6M/7CpOmjYSYruw2nbxNLsg0RQffPKobPGdt1NUcFgjm7VlPOIyNiqo41/c8C+VEMdvVPihgn6J+KNuiwEVPxUafrilVT+QE6P9dqj6O3nYDTE4ZEsMppXrbxEAEXlgm5yBCXuLHV8ro6UlagHvPtbLSXO9wQCfe0dzNMqcwIPp4wJV1PeQLr15nnSbj3f2Ph7B8S42EwfyjZJ8ljTpHrdV9Wf5sNpAVZmBivps/wyGqkGJNFxLEvryCnvo1N2/mVZph0PIhgJguUEcT7E0SWjZlWWNI455neCXmnm5WpIFtiIVlr0ze+6AGkPp/Tn+9+8/1TqJzz5YBKysqT4PNjOos1ofmgAjvaThRmCXl/rpWAo+A1QC50EK4fxOeNWIX7ArHLxLpw9jtByijdrWHOKZNhqxEOKXMXO413mTdnaKxmNLevc2iXH445cXnga/cMRW4NkPF9DPAB3OrEX2YLJ2VjrDJOAzDW6rqrPjJ1YhQc2fjkri0idoOOtFbepiUpb+RmtmZp//oOiF7IBhLjZ+VNcTj8I=
+  - secure: fKwTJDTFV2XK2cR2zyl+gt6wO1YhnmUJ995HeaCoLCtq9mctvrOIzQWD0BPhFp5POy/mWLBJbnckJ8uVdbCIOJThL57usQNXgSf0FkuVt4y/MzDROyFQ0Z22kY14kkRBgIUqTqzg5NYYBTKCTqRj3nyHbIRKMpR92ZeZD9ezOWdEaCKWLbtYjoEKo4a3dvo7GSFR/1ctQ0D5kZp9ExSAPQ6Ie6k3hK+UUh2zEA2YbUqJAb5JV/+v5wPcUvZrIgidI/pAe9WJn6EOPgwPeJQX6uqavAVI8Ll7o0CMoamP74IausTteyX9ZI6HpcvmM4vjNNt71qPGz2nE0Gjkpb7fXkXf6/I/XMDyMRigXlxdDKgEcC92a5OmPjBq4T5JuKxglbTKh5j5bI6FY3lPG99f3d+0kVOr3YD9/A2D7aZ+3YUiUJLCTkLyXonle3DuMXEQZMrmVTrl+PyF4tMQhO6OO6V0BcgdEkLWS+h06rgiLBl0CsOKXTzT2LCjpu3nvQhA8fBlvxAVIHeK+eV5zED0zbfawMlhGJJnMXegN1P5iZS7lz/xWDsMc5lZJx14+mVPAA0Y4PBKDXsSNbj27tk7nAxJBVu35nSBDIkbUa3J009m/80ZYBiS3Nah/SUoVqswIbiZ0dzYpIliTncwWOHGFMZG4MDerhnTJc/cTU3dPPc=
