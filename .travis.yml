@@ -1,44 +1,33 @@
 language: python
 python: '3.6'
-dist: xenial
-stages:
-- test
-- name: deploy
-  if: tag IS present
+
 cache:
   pip: true
   directories:
   - "$HOME/.cache/pre-commit"
-jobs:
-  include:
-  - stage: test
-    install:
-    - pip install --upgrade pip
-    - pip install pre-commit coveralls poetry
-    - pre-commit install-hooks
-    - poetry install -v
-    script:
-    - pre-commit run --all-files
-    - pytest --cov=./graphene_acl
-    after_success:
-    - coveralls -v
-  - stage: deploy
-    script:
-    - echo Deploying to PyPI...
+
+before_install:
+  - pip install --upgrade pip
+  - pip install pre-commit coveralls poetry
+  - pre-commit install-hooks
+install:
+  - poetry install -v
+script:
+  - pre-commit run --all-files
+  - pytest --cov=./graphene_acl
+after_success:
+  - coveralls -v
 before_deploy:
-- pip install --upgrade pip
-- pip install poetry
-- poetry config http-basic.pypi $PYPI_USER $PYPI_PASS
-- poetry build
+  - poetry config repository.pypi https://pypi.org
+  - poetry config http-basic.pypi $PYPI_USER $PYPI_PASS
+  - poetry build -f sdist
 deploy:
   provider: script
   script: poetry publish
   skip_cleanup: true
   on:
-    all_branches: true
-    repo: CyberGRX/graphene-acl
     tags: true
 env:
   global:
-  - secure: xJZQ+kAS4ZwX4P9BdhLoEIztxbNFhmzBOHjgkaonGaz6/pIGNTO0V2tvFd3ffL4dWfGdsm9uj4BlpO9jHLQ+8RSfh4f/GqNL5gpFSOSTtzdFcY+78CuvH1antpRMYaks/atyFqyYtFX6s6M/7CpOmjYSYruw2nbxNLsg0RQffPKobPGdt1NUcFgjm7VlPOIyNiqo41/c8C+VEMdvVPihgn6J+KNuiwEVPxUafrilVT+QE6P9dqj6O3nYDTE4ZEsMppXrbxEAEXlgm5yBCXuLHV8ro6UlagHvPtbLSXO9wQCfe0dzNMqcwIPp4wJV1PeQLr15nnSbj3f2Ph7B8S42EwfyjZJ8ljTpHrdV9Wf5sNpAVZmBivps/wyGqkGJNFxLEvryCnvo1N2/mVZph0PIhgJguUEcT7E0SWjZlWWNI455neCXmnm5WpIFtiIVlr0ze+6AGkPp/Tn+9+8/1TqJzz5YBKysqT4PNjOos1ofmgAjvaThRmCXl/rpWAo+A1QC50EK4fxOeNWIX7ArHLxLpw9jtByijdrWHOKZNhqxEOKXMXO413mTdnaKxmNLevc2iXH445cXnga/cMRW4NkPF9DPAB3OrEX2YLJ2VjrDJOAzDW6rqrPjJ1YhQc2fjkri0idoOOtFbepiUpb+RmtmZp//oOiF7IBhLjZ+VNcTj8I=
-  - secure: fKwTJDTFV2XK2cR2zyl+gt6wO1YhnmUJ995HeaCoLCtq9mctvrOIzQWD0BPhFp5POy/mWLBJbnckJ8uVdbCIOJThL57usQNXgSf0FkuVt4y/MzDROyFQ0Z22kY14kkRBgIUqTqzg5NYYBTKCTqRj3nyHbIRKMpR92ZeZD9ezOWdEaCKWLbtYjoEKo4a3dvo7GSFR/1ctQ0D5kZp9ExSAPQ6Ie6k3hK+UUh2zEA2YbUqJAb5JV/+v5wPcUvZrIgidI/pAe9WJn6EOPgwPeJQX6uqavAVI8Ll7o0CMoamP74IausTteyX9ZI6HpcvmM4vjNNt71qPGz2nE0Gjkpb7fXkXf6/I/XMDyMRigXlxdDKgEcC92a5OmPjBq4T5JuKxglbTKh5j5bI6FY3lPG99f3d+0kVOr3YD9/A2D7aZ+3YUiUJLCTkLyXonle3DuMXEQZMrmVTrl+PyF4tMQhO6OO6V0BcgdEkLWS+h06rgiLBl0CsOKXTzT2LCjpu3nvQhA8fBlvxAVIHeK+eV5zED0zbfawMlhGJJnMXegN1P5iZS7lz/xWDsMc5lZJx14+mVPAA0Y4PBKDXsSNbj27tk7nAxJBVu35nSBDIkbUa3J009m/80ZYBiS3Nah/SUoVqswIbiZ0dzYpIliTncwWOHGFMZG4MDerhnTJc/cTU3dPPc=
+  - secure: VOvHmiCymr199V1RY9CjljUehNalVN4dPb4olT8+A4QTN5GBvNQg5JG+/lbb2K3sNeE8UfFwtjW2aSSmRg/LAqSVqrXbCySAvUoILTAcwx/wFOHtIPQ+Q3RVnpSh8iEd9teYz8aarvjIJCjrZPpk7sa9xGKc/99eXqfXzS03UM2Go4L0h3dDdI039di2PpvxOPLqZbUrsXL0+OzadEpVjDkL3kmgYnMt1dnQO4kVOivaLmI2tmv74YGJFvw/As6JWYxWCGR4vRHh1fNNVCMcb1jahG9IDwfoCulqindTtrxh75H3nuEOEwpPp9YzAst2UEFBg3T7Umz/zkfo/dSBcDlGhLof7sJgcj1DxgSYqQRJIXEk5cRe3di2l+cXlOU8fTcBpDTYF3N6MxaIrhr5jgc7YOoC1yutXYwF4SWVU9bF9PINFJQlw5ecn2W0ku5Qr80AmJfn5CI+P/CWZx81rRCjHuFMVnWycHglmxTfLMm1tc7tQjAhElh3aITjj84ylhDiX+xo+X1u7Jsc4iV7+29pSUHD1lWhmgkjwGcO1NHuimReV6k83q+C9fRO+UjgDR85qNNlQh8igkOulodoUFesAAnFHy71/khFClSdmEoYl6PWlTSunP6958AVXEbnU38ltG8s+QCqVk66KLxliimRpuPYvO6GeM0iMVQ3Zhg=
+  - secure: hT9oZq/TO2RMa0jHeet4bSh9jZC2ibvZmNY1JAIImf3LmdfsF62E5f7gBxn1BnT/o6k7MIDSXxYiKrelBfRHs48QDRj9b1yjTtPhEjwwArjqZaY5w3xno7zW3UZMDfXW+LtLeC78lhjFaPeJ4BMvDASxA0HGxiCOun6YiDZYqYwrOmzM/iUZxznbsixlRSCWyb9l4nuynAaJZmXszCAi7Ag0xHrbkakdt5Q9jV0ZkcUi1WY1iZQAWNenO3xmpSiMtk5EcEhmsj8mPmSba1HajjqSMsfbLZa8ZONbrjPWki/ipwzQDUfDaSTQV13RqAQ4W/fbtPHAAstqXYpcEsjRoXbfapF5vmhLedEK8vVWjLQvRzwCiVPLB5o6OeTmnG8D+qjvjuEeeOeNfJZiesSfDm0BkeBXsKOpZGGD5vJ4CDccYSENMHY4X9uho+rg/cE6WOBiFbMKR/QUeSzv2V936zMBK0+2qW/jgFlQF0IXRfXZtp6L6xomqItWM+EubHxURHBJ9ZC6V+E4eZh/KCWgV/T1wXM3PAeR4351TcTEQMNk+s2UT4i73idkXOjx1HVU4eCmbFTHt+fqEuoX9Ximbg6CwExDyb84eBniO7LcIOnflaIhpdsWvluGTxNW8+KSy7wXRdkaahsGML9zhbvrvQi48ZIHOr+i2sxAVqr/9jw=
