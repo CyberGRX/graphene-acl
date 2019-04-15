@@ -1,9 +1,10 @@
 [tool.poetry]
 name = "graphene-acl"
-version = "1.0.1"
+version = "1.0.2"
 description = "Graphene Field ACL"
 authors = ["Nick Harris <nick.harris@cybergrx.com>", "CyberGRX Engineering Team <engineers@cybergrx.com>"]
 license = "MIT"
+readme = "README.md"
 repository = "https://github.com/CyberGRX/graphene-acl"
 keywords = ["graphene", "acl", "graphql", "python"]
 exclude = ["env", "dist", "build", "tests", "tests.*"]
