@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "graphene-acl"
-version = "1.0.0"
+version = "1.0.1"
 description = "Graphene Field ACL"
 authors = ["Nick Harris <nick.harris@cybergrx.com>", "CyberGRX Engineering Team <engineers@cybergrx.com>"]
 license = "MIT"

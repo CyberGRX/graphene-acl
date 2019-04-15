@@ -18,12 +18,10 @@ script:
 after_success:
   - coveralls -v
 before_deploy:
-  - poetry config repository.pypi https://pypi.org
-  - poetry config http-basic.pypi $PYPI_USER $PYPI_PASS
   - poetry build -f sdist
 deploy:
   provider: script
-  script: poetry publish
+  script: poetry publish -v --username $PYPI_USER --password $PYPI_PASS
   skip_cleanup: true
   on:
     tags: true
