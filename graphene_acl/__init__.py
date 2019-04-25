@@ -1,3 +1,3 @@
-from .fields import AclField
+from .fields import AclField, acl_field_type
 
-__all__ = ["AclField"]
+__all__ = ["AclField", "acl_field_type"]

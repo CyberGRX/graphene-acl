@@ -1,5 +1,6 @@
 from logging import getLogger
 from promise import Promise
+from enum import Enum
 
 logger = getLogger(__name__)
 
@@ -16,18 +17,22 @@ class ResolverRouter(object):
 
     def register(self, handler, key=None):
         if key:
-            self._handlers[key] = handler
+            if isinstance(key, Enum):
+                self._handlers[key.value] = handler
+                self._handlers[key.name] = handler
+            self._handlers[str(key)] = handler
         else:
             self._default_handler = handler
 
     def _get_handler(self, root, info, *args, routing_key=None, **kwargs):
         handler = None
         if routing_key:
-            handler = self._handlers.get(routing_key, None)
+            routing_key_str = str(routing_key)
+            handler = self._handlers.get(routing_key_str, None)
             if not handler:
                 logger.error(
                     "Missing resolver for {}.{} classifier {}".format(
-                        self.__class__, info.field_name, routing_key
+                        self.__class__, info.field_name, routing_key_str
                     )
                 )
         return handler or self._default_handler

@@ -13,11 +13,12 @@ class AclField(Field):
     ):
         self._acl_validator = acl_validator
         self._acl_router = ResolverRouter(acl_classifier)
-        super().__init__(*args, **kwargs)
+        super(AclField, self).__init__(*args, **kwargs)
 
     def get_resolver(self, parent_resolver):
+        super_resolver = super(AclField, self).get_resolver(parent_resolver)
         resolver = partial(
-            self._acl_router.resolver, self.resolver or parent_resolver
+            self._acl_router.resolver, super_resolver or self.resolver
         )
 
         @wraps(resolver)
@@ -39,3 +40,11 @@ class AclField(Field):
             return func
 
         return decorator
+
+
+def acl_field_type(name, WrappedField):
+    def get_resolver(self, parent_resolver):
+        acl_resolver = AclField.get_resolver(self, parent_resolver)
+        return WrappedField.get_resolver(self, acl_resolver)
+
+    return type(name, (WrappedField, AclField), {"get_resolver": get_resolver})

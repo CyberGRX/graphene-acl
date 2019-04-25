@@ -2,6 +2,12 @@
 
 The motivation for this library is to simplify access control protection for Graphene Fields. A common approach to ACL protection is through the use of a reusable permissions validation decorator. The problem is this is cumbersome for Graphene Fields that use the standard resolver. You are forced to write an unnecessary resolver function just to annotate it with your permissions validator. The second cumbersome problem this library addresses is ACL role based resolvers. Depending on the users role you might want to perform different business logic in order to retrieve the data they requested for a Graphene Field.
 
+## Installation
+
+```bash
+$ pip install graphene-acl
+```
+
 ## Usage
 
 ### acl_classifier
@@ -43,6 +49,19 @@ def resolve_private_name__admin(root, info, *args, **kwargs):
 def resolve_private_name__default(root, info):
     # Alternatively, authorization handling could be done by an acl_validator
     raise Error('Not Authorized')
+```
+
+ACL Connection Fields
+
+```python
+from graphene_django.filter import DjangoFilterConnectionField
+from graphene_acl import acl_field_type
+
+BarConnectionField = acl_field_type('BarConnectionField', DjangoFilterConnectionField)
+
+class Foo(graphene.ObjectType):
+    bar = BarConnectionField(MyNode, acl_permissions=has_permission('FOO'))
+
 ```
 
 ## Development
