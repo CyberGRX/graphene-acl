@@ -102,8 +102,8 @@ class Foo(graphene.ObjectType):
 ### First time setup
 
 -   Install Precommit hooks
--   `brew install pre-commit && pre-commit install && pre-commit install --install-hooks`
+    -   `brew install pre-commit && pre-commit install && pre-commit install --install-hooks`
 -   Install poetry: https://github.com/sdispater/poetry#installation
--   `curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python`
+    -   `curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python`
 -   Install dependencies
--   `poetry install`
+    -   `poetry install`
