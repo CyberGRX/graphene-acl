@@ -12,7 +12,7 @@ $ pip install graphene-acl
 
 ### acl_classifier
 
-The purpose of the classifier is to return a route key that will be used to determine which resolver function is used for resolving the field. The classifier function has access to all the arguments from the field resolver.
+The purpose of the classifier is to return a route key that will be used to determine which resolver function is used for resolving the field. The classifier function has access to all the arguments from the field resolver and can be excuted synchonously or asynchronously.
 
 ### acl_validator
 
@@ -61,7 +61,7 @@ def resolve_admin_field(root, info, *args, **kwargs):
     pass
 
 @Foo.admin_field.resolve()
-def resolve_default_admin_field(root, info):
+def resolve_default_admin_field(root, info, *args, **kwargs):
     raise Error('Not Authorized')
 
 @Foo.tenant_field.resolve('perm1')
