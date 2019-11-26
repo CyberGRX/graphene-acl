@@ -50,11 +50,12 @@ class ResolverRouter(object):
                 )
         return handler or self._default_handler
 
-    def resolver(self, parent_resolver, root, info, *args, **kwargs):
+    def _resolver(
+        self, routing_key, parent_resolver, root, info, *args, **kwargs
+    ):
         handler = None
-        if self._classifier:
-            routing_key = self._classifier(root, info, *args, **kwargs)
 
+        if routing_key:
             handler = self._get_handler(
                 root, info, *args, routing_key=routing_key, **kwargs
             )
@@ -68,3 +69,17 @@ class ResolverRouter(object):
 
             return handler(root, info, *args, **kwargs)
         return None
+
+    def resolver(self, parent_resolver, root, info, *args, **kwargs):
+        routing_key = None
+        if self._classifier:
+            routing_key = self._classifier(root, info, *args, **kwargs)
+            if Promise.is_thenable(routing_key):
+                return Promise.resolve(routing_key).then(
+                    lambda key: self._resolver(
+                        key, parent_resolver, root, info, *args, **kwargs
+                    )
+                )
+        return self._resolver(
+            routing_key, parent_resolver, root, info, *args, **kwargs
+        )
