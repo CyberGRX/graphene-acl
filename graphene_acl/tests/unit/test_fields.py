@@ -20,6 +20,19 @@ def classifier(root, info, *args, **kwargs):
     return None
 
 
+def and_or_classifier(root, info, *args, **kwargs):
+    permissions = info.context.jwt.permissions
+
+    if "foo" in permissions and "bar" not in permissions:
+        return "foo"
+    elif "bar" in permissions and "foo" not in permissions:
+        return "bar"
+    elif "bar" in permissions and "foo" in permissions:
+        return ["bar", "foo"]
+
+    return None
+
+
 def enum_classifier(root, info, foo, *args, **kwargs):
     if foo in [FooEnum.FOO]:
         return foo
@@ -96,6 +109,64 @@ def test_AclField_classifier_success(mocker):
     result = resolver(None, mock_info)
 
     assert result == "bar"
+
+    mock_info.context.jwt.permissions = []
+
+    result = resolver(None, mock_info)
+
+    assert result == "default"
+
+
+def test_AclField_multi_route_classifier_success(mocker):
+    field = AclField(graphene.String, acl_classifier=and_or_classifier)
+
+    @field.resolve("foo")
+    @field.resolve("bar")
+    def foo_resolver(root, info, *args, **kwargs):
+        return "foo or bar"
+
+    @field.resolve(["foo", "bar"])
+    def foo_and_bar_resolver(root, info, *args, **kwargs):
+        return "foo and bar"
+
+    @field.resolve()
+    def default_resolver(root, info, *args, **kwargs):
+        return "default"
+
+    resolver = field.get_resolver(None)
+
+    mock_info = mocker.MagicMock()
+    mock_info.context.jwt.permissions = ["foo"]
+
+    result = resolver(None, mock_info)
+
+    assert (
+        result == "foo or bar"
+    ), "Failed to resolve stacked resolver decorators"
+
+    mock_info.context.jwt.permissions = ["bar"]
+
+    result = resolver(None, mock_info)
+
+    assert (
+        result == "foo or bar"
+    ), "Failed to resolve stacked resolver decorators"
+
+    mock_info.context.jwt.permissions = ["bar", "foo"]
+
+    result = resolver(None, mock_info)
+
+    assert result == (
+        "foo and bar"
+    ), "Failed to resolve ANDed route keys for 1:1 permissions"
+
+    mock_info.context.jwt.permissions = ["bar", "foo", "foobar"]
+
+    result = resolver(None, mock_info)
+
+    assert result == (
+        "foo and bar"
+    ), "Failed to resolve ANDed route keys for extra permissions"
 
     mock_info.context.jwt.permissions = []
 

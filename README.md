@@ -25,8 +25,20 @@ from graphene_acl import AclField
 import graphene
 
 def classifier(root, info, *args, **kwargs):
-    if 'admin' in info.context.jwt.permissions:
+    permissions = info.context.jwt.permissions
+
+    if 'admin' in permissions:
         return 'admin'
+    if 'perm1' in permissions and not 'perm2' in permissions:
+        return 'perm1'
+    if 'perm2' in permissions and not 'perm1' in permissions:
+        return 'perm2'
+    if 'perm2' in permissions and 'perm1' in permissions:
+        return ['perm1', 'perm2']
+    if 'perm3' in permissions:
+        return 'perm3'
+    if 'perm4' in permissions:
+        return 'perm4'
     return None
 
 def has_permissions(permissions):
@@ -38,17 +50,38 @@ def has_permissions(permissions):
     return validator
 
 class Foo(graphene.ObjectType):
-    private_name = AclField(graphene.String, acl_classifier=classifier)
+    # Demonstrates simple routing based on an Admin classifier route key
+    admin_field = AclField(graphene.String, acl_classifier=classifier)
     restricted_name = AclField(graphene.String, acl_validator=has_permissions(['foo:name:read', 'admin']))
 
-@Foo.private_name.resolve('admin')
-def resolve_private_name__admin(root, info, *args, **kwargs):
+    tenant_field = AclField(graphene.String, acl_classifier=classifier)
+
+@Foo.admin_field.resolve('admin')
+def resolve_admin_field(root, info, *args, **kwargs):
     pass
 
-@Foo.private_name.resolve()
-def resolve_private_name__default(root, info):
-    # Alternatively, authorization handling could be done by an acl_validator
+@Foo.admin_field.resolve()
+def resolve_default_admin_field(root, info):
     raise Error('Not Authorized')
+
+@Foo.tenant_field.resolve('perm1')
+def resolve_perm1_field(root, info, *args, **kwargs):
+    pass
+
+@Foo.tenant_field.resolve('perm2')
+def resolve_perm2_field(root, info, *args, **kwargs):
+    pass
+
+@Foo.tenant_field.resolve(['perm1', 'perm2'])
+def resolve_perm1_and_perm2_field(root, info, *args, **kwargs):
+    # Uses sorted() + tuple hashing to register function
+    pass
+
+@Foo.tenant_field.resolve('perm3')
+@Foo.tenant_field.resolve('perm4')
+def resolve_perm3_or_perm4_field(root, info, *args, **kwargs):
+    # Registers function for both 'perm3' and 'perm4' route keys
+    pass
 ```
 
 ACL Connection Fields
