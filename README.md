@@ -84,7 +84,7 @@ def resolve_perm3_or_perm4_field(root, info, *args, **kwargs):
     pass
 ```
 
-ACL Connection Fields
+**ACL Connection Fields**
 
 ```python
 from graphene_django.filter import DjangoFilterConnectionField
