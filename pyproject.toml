@@ -1,11 +1,10 @@
 [tool.poetry]
 name = "graphene-acl"
-version = "1.1.0"
+version = "1.1.1"
 description = "Graphene Field ACL"
 authors = ["Nick Harris <nick.harris@cybergrx.com>", "CyberGRX Engineering Team <engineers@cybergrx.com>"]
 license = "MIT"
 readme = "README.md"
-editable = false
 repository = "https://github.com/CyberGRX/graphene-acl"
 keywords = ["graphene", "acl", "graphql", "python"]
 exclude = ["env", "dist", "build", "tests", "tests.*"]
@@ -29,5 +28,5 @@ pytest-asyncio = "^0.10.0"
 [tool.poetry.extras]
 
 [build-system]
-requires = ["poetry>=0.12"]
+requires = ["poetry>=1.0,<2"]
 build-backend = "poetry.masonry.api"
